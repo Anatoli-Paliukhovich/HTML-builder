@@ -45,6 +45,39 @@ fs.readdir(path.join(__dirname, 'styles'), (err, files) => {
     });
   }
 });
+
+//Replace tags in template
+fs.readFile(path.join(__dirname, 'template.html'), 'utf8', (err, data) => {
+  if (err) {
+    throw err;
+  }
+  let tags = data.match(/{{(.*?)}}/g);
+  tags.filter((tag) => {
+    let tagName = tag.slice(2).slice(0, -2);
+    fs.readFile(
+      path.join(path.join(__dirname, 'components', tagName + '.html')),
+      'utf8',
+      (err, componentsData) => {
+        if (err) {
+          throw err;
+        } else {
+          data = data.replace(tag, componentsData);
+          fs.writeFile(
+            path.join(path.join(__dirname, 'project-dist', 'index.html')),
+            data,
+            'utf8',
+            (err) => {
+              if (err) {
+                throw err;
+              }
+            },
+          );
+        }
+      },
+    );
+  });
+});
+
 //Copy assets folder
 const input = path.join(__dirname, 'assets');
 const output = path.join(__dirname, 'project-dist', 'assets');
@@ -74,6 +107,8 @@ function copyDir(input, output) {
     });
   });
 }
+
 copyDir(input, output);
-//Удаление project-dist
+
+//Delete files in project-dist
 (function deleteDir() {});
